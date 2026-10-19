@@ -1,0 +1,449 @@
+<!doctype html>
+<html lang="vi">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Hỏi Tú Anh</title>
+<link rel="icon" href="favicon.svg">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800;900&display=swap" rel="stylesheet">
+<style>
+  /* Trang thử kiểu "AI portfolio" theo đúng tông mẫu aaabadcode.com (nền trắng, xanh dương).
+     Câu trả lời soạn sẵn từ CV của Tú Anh, chưa gọi AI thật. */
+  :root {
+    --bg: #ffffff;
+    --text: #0a0a0a;
+    --soft: #404040;
+    --muted: #737373;
+    --line: #e5e5e5;
+    --card: #ffffff;
+    --chip-bg: #ffffff;
+    --blue: #4f8ff7;
+    --blue-d: #3b7cf0;
+  }
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+  html, body { background: var(--bg); color: var(--text); font-family: "Inter", ui-sans-serif, system-ui, sans-serif; }
+  body { min-height: 100vh; min-height: 100svh; overflow-x: hidden; }
+  a { color: inherit; text-decoration: none; }
+  button { font: inherit; color: inherit; background: none; border: 0; cursor: pointer; }
+
+  /* Nền mực loang pastel theo chuột */
+  #ink { position: fixed; inset: 0; width: 100%; height: 100%; z-index: 0; pointer-events: none; filter: blur(7px); }
+  #ink.soft { filter: blur(22px) saturate(1.1); }
+
+  /* Tên lớn xám nhạt, cắt chân ở đáy */
+  .ghost {
+    position: fixed; left: 50%; bottom: 0; transform: translate(-50%, 30%); z-index: 0; pointer-events: none;
+    white-space: nowrap; font-weight: 900; letter-spacing: -0.04em; line-height: 1;
+    font-size: clamp(5rem, 17vw, 16rem);
+    background: linear-gradient(180deg, #ededed 10%, rgba(237, 237, 237, 0) 85%);
+    -webkit-background-clip: text; background-clip: text; color: transparent;
+    transition: opacity .6s ease;
+  }
+  body.chatting .ghost { opacity: 0; }
+
+  /* Nút góc trái */
+  .back {
+    position: fixed; top: 28px; left: 24px; z-index: 20;
+    display: inline-flex; align-items: center; gap: 10px; padding: 9px 16px 9px 10px; border-radius: 999px;
+    background: rgba(255, 255, 255, .85); border: 1px solid var(--line);
+    -webkit-backdrop-filter: blur(10px); backdrop-filter: blur(10px);
+    font-size: 14px; font-weight: 500; box-shadow: 0 1px 2px rgba(0, 0, 0, .04);
+    transition: box-shadow .25s;
+  }
+  .back:hover { box-shadow: 0 6px 18px -8px rgba(0, 0, 0, .25); }
+  .back .ic { width: 24px; height: 24px; border-radius: 7px; background: #111; color: #fff; display: grid; place-items: center; font-size: 11px; font-weight: 700; }
+  .back svg { width: 16px; height: 16px; stroke: currentColor; fill: none; stroke-width: 2; transition: transform .25s; }
+  .back:hover svg { transform: translateX(2px); }
+  .demo-tag { position: fixed; top: 34px; right: 24px; z-index: 20; font-size: 11px; letter-spacing: .12em; text-transform: uppercase; color: var(--muted); border: 1px dashed #d4d4d4; padding: 5px 10px; border-radius: 999px; background: rgba(255, 255, 255, .8); }
+
+  /* ---------- Màn đầu ---------- */
+  .home {
+    position: relative; z-index: 2; min-height: 100vh; min-height: 100svh;
+    display: flex; flex-direction: column; align-items: center; justify-content: center;
+    padding: 96px 16px 48px; text-align: center;
+    transition: opacity .45s ease, transform .45s ease, filter .45s ease;
+  }
+  body.chatting .home { opacity: 0; transform: translateY(-30px) scale(.98); filter: blur(8px); pointer-events: none; position: fixed; inset: 0; }
+  .logo { width: 56px; height: 56px; border-radius: 16px; background: #fff; box-shadow: 0 6px 20px -8px rgba(0, 0, 0, .25); display: grid; place-items: center; font-weight: 900; font-size: 18px; letter-spacing: -0.04em; margin: 0 auto 14px; }
+  .hello { font-size: clamp(1.1rem, 2.4vw, 1.5rem); font-weight: 600; }
+  .title { font-weight: 800; letter-spacing: -0.04em; line-height: 1.02; margin-top: 4px; font-size: clamp(2.4rem, 6.4vw, 4.4rem); }
+  .avatar { position: relative; flex: none; width: clamp(150px, min(26vw, 28vh), 230px); height: clamp(150px, min(26vw, 28vh), 230px); margin: 30px auto 30px; }
+  .avatar img { width: 100%; height: 100%; object-fit: cover; object-position: 50% 22%; border-radius: 50%; display: block; box-shadow: 0 24px 50px -24px rgba(0, 0, 0, .45); }
+
+  .ask {
+    display: flex; align-items: center; gap: 10px; width: min(560px, 100%); margin: 0 auto;
+    padding: 7px 7px 7px 24px; border-radius: 999px;
+    background: rgba(255, 255, 255, .9); border: 1px solid var(--line);
+    -webkit-backdrop-filter: blur(10px); backdrop-filter: blur(10px);
+    box-shadow: 0 1px 2px rgba(0, 0, 0, .04), 0 10px 30px -18px rgba(0, 0, 0, .2);
+    transition: border-color .25s, box-shadow .25s;
+  }
+  .ask:focus-within { border-color: #c7d7fb; box-shadow: 0 0 0 4px rgba(79, 143, 247, .12); }
+  .ask input { flex: 1; min-width: 0; background: none; border: 0; outline: none; color: var(--text); font: inherit; font-size: 15px; }
+  .ask input::placeholder { color: #a3a3a3; }
+  .ask button { width: 42px; height: 42px; flex: none; border-radius: 50%; display: grid; place-items: center; background: var(--blue); transition: transform .25s, background .25s; }
+  .ask button:hover { transform: scale(1.06); background: var(--blue-d); }
+  .ask svg { width: 18px; height: 18px; stroke: #fff; fill: none; stroke-width: 2.2; }
+
+  .chips { display: grid; grid-template-columns: repeat(5, 1fr); gap: 12px; width: min(720px, 100%); margin: 18px auto 0; }
+  .chip {
+    display: flex; flex-direction: column; align-items: center; gap: 8px; padding: 16px 8px; border-radius: 18px;
+    background: rgba(255, 255, 255, .9); border: 1px solid var(--line);
+    font-size: 14px; font-weight: 500; transition: transform .25s, box-shadow .25s, border-color .25s;
+  }
+  .chip:hover { transform: translateY(-3px); box-shadow: 0 12px 26px -16px rgba(0, 0, 0, .35); border-color: #d4d4d4; }
+  .chip svg, .mini svg { width: 20px; height: 20px; fill: none; stroke-width: 1.8; stroke-linecap: round; stroke-linejoin: round; }
+
+  /* Hiệu ứng vào trang (như mẫu: khối trên trượt xuống, khối dưới trượt lên, nút góc phóng to) */
+  @keyframes fromTop { from { opacity: 0; transform: translateY(-56px); } }
+  @keyframes fromBottom { from { opacity: 0; transform: translateY(80px); } }
+  @keyframes popIn { from { opacity: 0; transform: scale(.8); } }
+  @keyframes fadeIn { from { opacity: 0; } }
+  .in-top { animation: fromTop .8s cubic-bezier(.2, .8, .2, 1) .35s backwards; }
+  .in-bottom { animation: fromBottom .8s cubic-bezier(.2, .8, .2, 1) .45s backwards; }
+  .in-pop { animation: popIn .7s cubic-bezier(.2, .8, .2, 1) .3s backwards; }
+  .avatar { animation: fadeIn 1s ease .5s backwards; }
+  .ghost { animation: fadeIn 1.6s ease .6s backwards; }
+
+  /* ---------- Chế độ chat ---------- */
+  .chat { position: relative; z-index: 2; display: none; min-height: 100vh; min-height: 100svh; padding: 96px 16px 200px; }
+  body.chatting .chat { display: block; }
+  body.chatting::before { content: ""; position: fixed; left: 0; right: 0; top: 0; height: 92px; z-index: 14; background: linear-gradient(#fff 62%, rgba(255, 255, 255, 0)); pointer-events: none; }
+  .chat-top { position: fixed; top: 22px; left: 50%; transform: translateX(-50%); z-index: 15; display: none; }
+  body.chatting .chat-top { display: block; animation: popIn .5s cubic-bezier(.2, .8, .2, 1) backwards; }
+  .chat-top img { width: 48px; height: 48px; border-radius: 50%; object-fit: cover; object-position: 50% 22%; display: block; box-shadow: 0 6px 16px -8px rgba(0, 0, 0, .4); }
+  .chat-top.talking img { animation: talk .9s ease-in-out infinite; }
+  @keyframes talk { 50% { transform: scale(1.08); } }
+  .thread { width: min(760px, 100%); margin: 0 auto; display: flex; flex-direction: column; gap: 22px; }
+  .q { align-self: flex-end; max-width: 80%; padding: 11px 18px; border-radius: 20px 20px 6px 20px; background: #f4f4f5; font-size: 15px; animation: fromBottom .45s cubic-bezier(.2, .8, .2, 1) backwards; }
+  .a { display: flex; flex-direction: column; gap: 14px; animation: fadeIn .4s ease backwards; }
+  .a p { font-size: 15.5px; line-height: 1.7; color: var(--soft); white-space: pre-line; }
+  .typing { display: inline-flex; gap: 5px; padding: 6px 0; }
+  .typing i { width: 7px; height: 7px; border-radius: 50%; background: #a3a3a3; animation: dot 1s ease-in-out infinite; }
+  .typing i:nth-child(2) { animation-delay: .15s; } .typing i:nth-child(3) { animation-delay: .3s; }
+  @keyframes dot { 50% { transform: translateY(-5px); opacity: .4; } }
+
+  .card { border-radius: 22px; background: var(--card); border: 1px solid var(--line); box-shadow: 0 1px 2px rgba(0, 0, 0, .03), 0 18px 40px -28px rgba(0, 0, 0, .3); overflow: hidden; animation: fromBottom .6s cubic-bezier(.2, .8, .2, 1) backwards; }
+  .profile { display: grid; grid-template-columns: 220px 1fr; }
+  .profile img { width: 100%; height: 100%; min-height: 250px; object-fit: cover; object-position: 50% 20%; display: block; background: #eef4ff; }
+  .profile .info { padding: 22px 24px; }
+  .profile h3 { font-size: 26px; font-weight: 700; letter-spacing: -0.02em; }
+  .meta { color: var(--muted); font-size: 14px; margin: 4px 0 12px; display: flex; flex-wrap: wrap; gap: 6px 14px; }
+  .meta span + span::before { content: "•"; margin-right: 14px; color: #d4d4d4; }
+  .profile p { font-size: 14.5px; line-height: 1.65; color: var(--soft); }
+  .tags { display: flex; flex-wrap: wrap; gap: 7px; margin-top: 14px; }
+  .tags span { font-size: 12.5px; padding: 5px 11px; border-radius: 999px; background: #f4f4f5; color: #262626; }
+
+  .carousel { display: flex; gap: 14px; overflow-x: auto; scroll-snap-type: x mandatory; padding: 2px 2px 10px; animation: fromBottom .6s cubic-bezier(.2, .8, .2, 1) backwards; scrollbar-width: thin; }
+  .job { flex: 0 0 290px; scroll-snap-align: start; border-radius: 20px; padding: 20px; color: #fff; display: flex; flex-direction: column; min-height: 300px; position: relative; overflow: hidden; }
+  .job::after { content: ""; position: absolute; right: -40px; top: -40px; width: 160px; height: 160px; border-radius: 50%; background: rgba(255, 255, 255, .12); }
+  .job small { font-size: 11px; letter-spacing: .14em; text-transform: uppercase; opacity: .8; }
+  .job h4 { font-size: 22px; font-weight: 800; letter-spacing: -0.02em; margin-top: 6px; }
+  .job .role { font-size: 14px; font-weight: 500; opacity: .92; margin-top: 4px; line-height: 1.4; }
+  .job ul { list-style: none; margin-top: auto; padding-top: 16px; display: flex; flex-direction: column; gap: 6px; }
+  .job li { font-size: 13px; line-height: 1.45; opacity: .92; padding-left: 14px; position: relative; }
+  .job li::before { content: ""; position: absolute; left: 0; top: .6em; width: 6px; height: 6px; border-radius: 50%; background: rgba(255, 255, 255, .8); }
+
+  .skills { display: grid; grid-template-columns: 1fr 1fr; }
+  .skills > div { padding: 20px 22px; border-top: 1px solid var(--line); }
+  .skills > div:nth-child(-n+2) { border-top: 0; }
+  .skills > div:nth-child(even) { border-left: 1px solid var(--line); }
+  .skills h4 { font-size: 16px; font-weight: 700; display: flex; align-items: center; gap: 8px; }
+  .skills h4 i { width: 10px; height: 10px; border-radius: 50%; }
+
+  .edu { padding: 22px 24px; display: grid; gap: 16px; }
+  .edu .row { display: flex; gap: 14px; align-items: flex-start; }
+  .edu .badge { width: 44px; height: 44px; flex: none; border-radius: 12px; display: grid; place-items: center; font-size: 20px; background: #f4f4f5; }
+  .edu b { display: block; font-size: 15.5px; }
+  .edu span { display: block; font-size: 13.5px; color: var(--muted); margin-top: 2px; line-height: 1.5; }
+  .stats { display: grid; grid-template-columns: repeat(3, 1fr); border-top: 1px solid var(--line); }
+  .stats div { padding: 16px; text-align: center; }
+  .stats div + div { border-left: 1px solid var(--line); }
+  .stats b { display: block; font-size: 24px; font-weight: 800; letter-spacing: -0.02em; }
+  .stats span { font-size: 12.5px; color: var(--muted); }
+
+  .links { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; padding: 14px; }
+  .link { display: flex; align-items: center; gap: 12px; padding: 10px 12px; border-radius: 16px; border: 1px solid var(--line); transition: box-shadow .25s, transform .25s; }
+  .link:hover { box-shadow: 0 10px 24px -16px rgba(0, 0, 0, .35); transform: translateY(-2px); }
+  .link .ic { width: 38px; height: 38px; flex: none; border-radius: 50%; display: grid; place-items: center; font-weight: 700; font-size: 13px; color: #fff; }
+  .link b { display: block; font-weight: 600; font-size: 14.5px; }
+  .link small { display: block; font-size: 12.5px; color: var(--muted); overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+  .link > span:last-child { min-width: 0; }
+
+  /* Thanh dưới trong chế độ chat */
+  .dock { position: fixed; left: 0; right: 0; bottom: 0; z-index: 15; padding: 14px 16px 16px; background: linear-gradient(to top, #fff 62%, rgba(255, 255, 255, 0)); display: none; }
+  body.chatting .dock { display: block; animation: fromBottom .5s cubic-bezier(.2, .8, .2, 1) backwards; }
+  .dock .mini { display: flex; gap: 8px; justify-content: center; flex-wrap: wrap; margin-bottom: 12px; }
+  .dock .mini button { display: inline-flex; align-items: center; gap: 7px; padding: 9px 16px; border-radius: 999px; font-size: 14px; background: #fff; border: 1px solid var(--line); transition: box-shadow .25s; }
+  .dock .mini button:hover { box-shadow: 0 8px 18px -12px rgba(0, 0, 0, .35); }
+  .dock .mini svg { width: 16px; height: 16px; }
+  .dock .ask { width: min(760px, 100%); background: #f4f4f5; border-color: transparent; }
+  .note { text-align: center; font-size: 12px; color: var(--muted); margin-top: 10px; }
+
+  @media (max-width: 680px) {
+    .chips { grid-template-columns: repeat(3, 1fr); }
+    .profile { grid-template-columns: 1fr; }
+    .profile img { min-height: 0; aspect-ratio: 4 / 3; }
+    .skills, .links { grid-template-columns: 1fr; }
+    .skills > div:nth-child(even) { border-left: 0; }
+    .skills > div:nth-child(2) { border-top: 1px solid var(--line); }
+    .job { flex-basis: 82%; }
+    .demo-tag { display: none; }
+    .back { top: 18px; left: 16px; }
+    /* đang chat: nút góc chỉ còn biểu tượng, hàng nút gợi ý 1 dòng kéo ngang */
+    body.chatting .back { padding: 8px; gap: 0; }
+    body.chatting .back .lbl, body.chatting .back svg { display: none; }
+    .dock .mini { flex-wrap: nowrap; justify-content: flex-start; overflow-x: auto; margin: 0 -16px 12px; padding: 0 16px; scrollbar-width: none; }
+    .dock .mini::-webkit-scrollbar { display: none; }
+    .dock .mini button { flex: none; }
+    .chat { padding-bottom: 170px; }
+  }
+  @media (prefers-reduced-motion: reduce) {
+    *, *::before, *::after { animation: none !important; transition: none !important; }
+  }
+</style>
+</head>
+<body>
+<canvas id="ink" aria-hidden="true"></canvas>
+<div class="ghost" aria-hidden="true">Tú Anh</div>
+
+<a class="back in-pop" href="https://buithituanh-cv.vercel.app/" target="_blank" rel="noopener">
+  <span class="ic">TA</span> <span class="lbl">Xem CV đầy đủ</span>
+  <svg viewBox="0 0 24 24"><path d="M9 18l6-6-6-6"/></svg>
+</a>
+
+<!-- Màn đầu -->
+<section class="home">
+  <div class="in-top">
+    <div class="logo">TA</div>
+    <p class="hello">Xin chào, mình là Tú Anh 👋</p>
+    <h1 class="title">Creator Partnership</h1>
+  </div>
+  <div class="avatar"><img src="photo.jpg" alt="Bùi Thị Tú Anh"></div>
+  <div class="in-bottom" style="width:100%">
+    <form class="ask" data-ask>
+      <input type="text" placeholder="Hỏi mình bất cứ điều gì…" aria-label="Câu hỏi">
+      <button type="submit" aria-label="Gửi"><svg viewBox="0 0 24 24"><path d="M5 12h14M13 6l6 6-6 6"/></svg></button>
+    </form>
+    <div class="chips" data-chips></div>
+  </div>
+</section>
+
+<!-- Chế độ chat -->
+<div class="chat-top" id="chatTop"><img src="photo.jpg" alt=""></div>
+<section class="chat"><div class="thread" id="thread"></div></section>
+<div class="dock">
+  <div class="mini" data-chips></div>
+  <form class="ask" data-ask>
+    <input type="text" placeholder="Hỏi mình bất cứ điều gì…" aria-label="Câu hỏi">
+    <button type="submit" aria-label="Gửi"><svg viewBox="0 0 24 24"><path d="M5 12h14M13 6l6 6-6 6"/></svg></button>
+  </form>
+  <p class="note">Trợ lý trả lời theo thông tin Tú Anh cung cấp.</p>
+</div>
+
+<script src="fluid.js"></script>
+<script>
+/* ---------- Dữ liệu (lấy từ CV của Tú Anh) ---------- */
+const ICONS = {
+  me: '<svg viewBox="0 0 24 24" stroke="#0d9488"><circle cx="12" cy="12" r="9"/><path d="M8.5 14.5s1.2 1.5 3.5 1.5 3.5-1.5 3.5-1.5M9 9.5h.01M15 9.5h.01"/></svg>',
+  exp: '<svg viewBox="0 0 24 24" stroke="#16a34a"><rect x="3" y="7" width="18" height="13" rx="2"/><path d="M8 7V5a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2M3 13h18"/></svg>',
+  skills: '<svg viewBox="0 0 24 24" stroke="#7c3aed"><path d="M12 3l9 5-9 5-9-5 9-5z"/><path d="M3 13l9 5 9-5"/></svg>',
+  edu: '<svg viewBox="0 0 24 24" stroke="#db2777"><path d="M2 9l10-5 10 5-10 5-10-5z"/><path d="M6 11v5c0 1.5 3 3 6 3s6-1.5 6-3v-5"/></svg>',
+  vibe: '<svg viewBox="0 0 24 24" stroke="#e11d48"><path d="M12 20s-7-4.4-7-10a4 4 0 0 1 7-2.6A4 4 0 0 1 19 10c0 5.6-7 10-7 10z"/></svg>',
+  contact: '<svg viewBox="0 0 24 24" stroke="#d97706"><circle cx="10" cy="8" r="4"/><path d="M3 21a7 7 0 0 1 14 0M17 11l2 2 3-3"/></svg>'
+};
+const TOPICS = [
+  { id: 'me', label: 'Về mình', q: 'Bạn là ai? Kể mình nghe về bạn nhé.' },
+  { id: 'vibe', label: 'Tính cách', q: 'Bạn là người như thế nào? Điểm mạnh, điểm yếu của bạn?' },
+  { id: 'exp', label: 'Kinh nghiệm', q: 'Bạn đã làm việc ở những đâu?' },
+  { id: 'skills', label: 'Kỹ năng', q: 'Bạn mạnh những kỹ năng gì?' },
+  { id: 'edu', label: 'Học vấn', q: 'Bạn học ở đâu, có thành tích gì?' },
+  { id: 'contact', label: 'Liên hệ', q: 'Làm sao để liên hệ với bạn?' }
+];
+const JOBS = [
+  ['HUSSIO', '02/2026 — 10/2026', 'CSKH & KOC/KOL Booking', ['Tìm kiếm, đàm phán và điều phối KOC/KOL cho chiến dịch TikTok Shop', 'Onboarding creator, gửi mẫu, cài hoa hồng, theo dõi tiến độ', 'Báo cáo KPI, GMV/NMV và hiệu suất creator'], 'linear-gradient(150deg,#14b8a6,#0f766e)'],
+  ['LAYLA Import Export', '09/2025 — 12/2025', 'Chuyên viên Kinh doanh (Sales)', ['Phát triển khách hàng quốc tế qua WhatsApp, Instagram, email', 'Đàm phán giá, thanh toán bằng tiếng Anh', 'Quản lý đơn xuất khẩu từ đầu đến cuối'], 'linear-gradient(150deg,#6366f1,#4338ca)'],
+  ['KORI Beauty Group', '09/2021 — 09/2025', 'Kinh doanh & E-commerce', ['Vận hành TikTok Shop, Shopee, Lazada, website', 'Tư vấn, chốt đơn, CSKH qua Pancake & POS', 'Hỗ trợ livestream, social selling'], 'linear-gradient(150deg,#ec4899,#be185d)'],
+  ['TKT Logistics', '05/2021 — 08/2021', 'Chứng từ & Kế toán', ['Xử lý chứng từ hải quan, vận tải, thương mại', 'Phối hợp hãng tàu, forwarder và khách hàng', 'Quản lý thanh toán và công nợ'], 'linear-gradient(150deg,#f59e0b,#b45309)'],
+  ['VINALAND Development', '09/2020 — 04/2021', 'Kinh doanh Bất động sản', ['Tư vấn sản phẩm bất động sản giá trị cao', 'Telesales và tư vấn trực tiếp', 'Nhân viên kinh doanh xuất sắc Q1 & Q2/2021'], 'linear-gradient(150deg,#3b82f6,#1d4ed8)']
+];
+const SKILLS = [
+  ['Creator & Chiến dịch', '#0d9488', ['Tìm kiếm KOC/KOL', 'Outreach', 'Đàm phán', 'Điều phối brief', 'Báo cáo hiệu suất', 'TikTok Shop / Affiliate']],
+  ['E-commerce & CSKH', '#16a34a', ['Tư vấn bán hàng', 'Chốt đơn', 'Social selling', 'Giữ chân khách hàng', 'Xử lý khiếu nại & giao hàng']],
+  ['Kinh doanh & Thị trường', '#7c3aed', ['B2B / B2C', 'Khách hàng quốc tế', 'Thương lượng', 'Báo giá', 'Điều phối đối tác']],
+  ['Nền tảng & Công cụ', '#d97706', ['TikTok Shop', 'Shopee', 'Lazada', 'Pancake', 'POS', 'Adobe Illustrator', 'MS Office', 'Google Workspace']]
+];
+const VIBE = [
+  ['Con người', '#e11d48', ['Hướng ngoại, thích kết nối', 'Trẻ trung, gần gũi', 'Chuyên nghiệp khi làm việc', 'Có tham vọng', 'Ham học hỏi']],
+  ['Điểm mạnh', '#0d9488', ['Xây dựng quan hệ', 'Sáng tạo gắn thực tế', 'Nhìn ra lỗ hổng vận hành', 'Thích nghi nhanh', 'Tiêu chuẩn chất lượng cao']],
+  ['Đang cải thiện', '#d97706', ['Bớt cầu toàn, chốt nhanh hơn', 'Ưu tiên ít mục tiêu hơn', 'Phân tích dữ liệu chuyên sâu', 'Giao việc & quản lý nhóm', 'Tiếng Anh công việc']]
+];
+const tags = list => `<div class="tags">${list.map(t => `<span>${t}</span>`).join('')}</div>`;
+
+const ANSWERS = {
+  me: {
+    card: () => `<div class="card profile"><img src="photo.jpg" alt="">
+      <div class="info"><h3>Bùi Thị Tú Anh</h3><div class="meta"><span>Sinh năm 2002</span><span>TP. Hồ Chí Minh</span></div>
+      <p>Chuyên viên E-commerce &amp; Creator Partnership — KOC/KOL booking, chăm sóc khách hàng, social selling và vận hành thương mại điện tử.</p>
+      ${tags(['Creator Partnership', 'KOC/KOL Booking', 'E-commerce', 'Customer Service', 'TikTok Shop'])}</div></div>`,
+    text: 'Chào bạn, mình là Tú Anh! Mình làm Creator Partnership và E-commerce: tìm và làm việc với KOC/KOL, điều phối chiến dịch TikTok Shop, chăm sóc khách hàng và vận hành các sàn như Shopee, Lazada.\n\nThế mạnh của mình là giao tiếp, đàm phán với creator và theo sát chiến dịch đến từng chi tiết. Bạn muốn xem kinh nghiệm hay kỹ năng của mình trước?'
+  },
+  vibe: {
+    card: () => `<div class="card skills">${VIBE.map(([t, c, list]) => `<div><h4><i style="background:${c}"></i>${t}</h4>${tags(list)}</div>`).join('')}</div>`,
+    text: 'Mình là người thích giao tiếp và kết nối — làm việc với creator, đối tác, khách hàng cho mình rất nhiều năng lượng. Ngoài đời mình trẻ trung, gần gũi, nhưng khi làm việc thì mình chú ý từng câu chữ để giữ sự chuyên nghiệp.\n\nMình hiếm khi hài lòng với phương án "dùng được": brief phải hay hơn, file phải gọn hơn, chiến dịch phải có thêm góc khai thác. Mình cũng hay hỏi "tại sao phải làm thế này" và tìm cách biến việc lặp lại thành quy trình — như từng phát hiện số KOC dự kiến vượt quá năng lực kho/R&D khi làm quy trình QC.\n\nĐiểm mình đang rèn: bớt cầu toàn để chốt việc nhanh hơn, tập trung vào ít mục tiêu hơn mỗi giai đoạn, và nâng kỹ năng phân tích dữ liệu, quản lý nhóm để tiến lên vị trí Leader.'
+  },
+  exp: {
+    card: () => `<div class="carousel">${JOBS.map(([co, time, role, items, bg]) =>
+      `<div class="job" style="background:${bg}"><small>${time}</small><h4>${co}</h4><div class="role">${role}</div><ul>${items.map(i => `<li>${i}</li>`).join('')}</ul></div>`).join('')}</div>`,
+    text: 'Mình đã đi qua 5 doanh nghiệp, từ bất động sản, logistics đến thương mại điện tử và gần nhất là Creator Partnership ở HUSSIO. Kéo ngang để xem từng chặng nhé.'
+  },
+  skills: {
+    card: () => `<div class="card skills">${SKILLS.map(([t, c, list]) => `<div><h4><i style="background:${c}"></i>${t}</h4>${tags(list)}</div>`).join('')}</div>`,
+    text: 'Mình mạnh nhất ở mảng creator và chiến dịch: tìm KOC/KOL, đàm phán, điều phối brief và đo hiệu suất. Bên cạnh đó là kinh nghiệm vận hành sàn TMĐT, chăm sóc khách hàng và bán hàng cho cả khách quốc tế bằng tiếng Anh.'
+  },
+  edu: {
+    card: () => `<div class="card"><div class="edu">
+      <div class="row"><span class="badge">🎓</span><div><b>ĐH Giao thông Vận tải — Phân hiệu TP.HCM</b><span>Cử nhân Kinh tế Vận tải — Kinh tế Vận tải Biển · 2020 – 2024</span></div></div>
+      <div class="row"><span class="badge">🏅</span><div><b>Sinh viên Xuất sắc toàn khóa</b><span>Thành viên tích cực CLB Tư vấn Tuyển sinh</span></div></div>
+      <div class="row"><span class="badge">⭐</span><div><b>Nhân viên kinh doanh xuất sắc</b><span>Quý 1 &amp; Quý 2/2021 — VINALAND</span></div></div></div>
+      <div class="stats"><div><b>4.0</b><span>GPA / 4.0</span></div><div><b>5</b><span>Doanh nghiệp</span></div><div><b>4</b><span>Sàn TMĐT</span></div></div></div>`,
+    text: 'Mình tốt nghiệp ĐH Giao thông Vận tải với GPA 4.0/4.0 và danh hiệu Sinh viên Xuất sắc toàn khóa. Khi đi làm, mình từng đạt Nhân viên kinh doanh xuất sắc hai quý liên tiếp năm 2021.'
+  },
+  contact: {
+    card: () => `<div class="card links">
+      <a class="link" href="tel:0899841436"><span class="ic" style="background:#16a34a">☎</span><span><b>Điện thoại</b><small>0899 841 436</small></span></a>
+      <a class="link" href="mailto:tuanhbui1902@gmail.com"><span class="ic" style="background:#EA4335">M</span><span><b>Gmail</b><small>tuanhbui1902@gmail.com</small></span></a>
+      <a class="link" href="https://buithituanh-cv.vercel.app/" target="_blank" rel="noopener"><span class="ic" style="background:#111">CV</span><span><b>CV đầy đủ</b><small>Bản web song ngữ VI / EN</small></span></a></div>`,
+    text: 'Bạn có thể gọi trực tiếp hoặc gửi email cho mình — mình sẽ phản hồi sớm nhất có thể. Cảm ơn bạn đã ghé xem nhé!'
+  },
+  fallback: {
+    card: () => '',
+    text: 'Câu hỏi hay quá! Phần này mình xin phép chia sẻ kỹ hơn khi gặp bạn ở buổi phỏng vấn nhé 😊\n\nTrong lúc chờ, bạn có thể hỏi mình về kinh nghiệm, kỹ năng, tính cách, mục tiêu nghề nghiệp — hoặc bấm một nút bên dưới.'
+  }
+};
+
+/* ---------- Kho hỏi-đáp ẩn: chỉ hiện khi câu hỏi khớp từ khoá ----------
+   Từ khoá viết KHÔNG DẤU, chữ thường (câu hỏi được bỏ dấu trước khi so). */
+const KB = [
+  [/\b(tuoi|sinh nam|ngay sinh|sinh ngay|bao nhieu tuoi|sinh nhat|age|birthday)\b/, 'Mình sinh ngày 01/09/2002, năm nay 24 tuổi.'],
+  [/(ten tieng anh|english name|shelly|biet danh|ten goi|ten that|ten day du|full name)/, 'Tên đầy đủ của mình là Bùi Thị Tú Anh, mọi người hay gọi là Tú Anh. Khi làm việc với đối tác nước ngoài mình dùng tên Shelly.'],
+  [/(song o dau|dang o dau|nha o dau|que o dau|que quan|dia chi|khu vuc|where.*live|location|sai gon|ho chi minh)/, 'Mình đang sống và làm việc tại TP. Hồ Chí Minh, sẵn sàng làm việc trực tiếp tại văn phòng.'],
+  [/(so thich|thich gi|dam me|hobby|ranh thi|thoi gian ranh)/, 'Mình mê thời trang và những thứ sáng tạo: phối đồ, xem nội dung của creator, tìm ý tưởng mới. Mình cũng thích gặp gỡ, trò chuyện với nhiều người — có lẽ vì vậy mà làm creator relations thấy rất hợp.'],
+  [/(diem yeu|nhuoc diem|khuyet diem|weakness|chua tot|can cai thien)/, 'Điểm mình đang rèn nhiều nhất là bớt cầu toàn: mình hay muốn chỉnh câu chữ, file, brief cho thật đẹp nên đôi khi tốn thời gian. Giờ mình đặt "mức đủ tốt" và hạn chót cho từng việc trước khi bắt tay.\n\nMình cũng đang nâng phân tích dữ liệu chuyên sâu (từ theo dõi số liệu sang tìm nguyên nhân và đề xuất quyết định) và tiếng Anh công việc.'],
+  [/(diem manh|uu diem|the manh|strength|gioi nhat|manh nhat)/, 'Ba điểm mạnh rõ nhất của mình:\n\n1. Kết nối và giữ quan hệ — với creator, agency, khách hàng và đồng nghiệp, mình biết đổi cách nói cho hợp từng người.\n2. Sáng tạo gắn thực tế — ý tưởng phải đi được thành brief, timeline, video và doanh số.\n3. Nhìn ra lỗ hổng vận hành — ví dụ phát hiện số KOC dự kiến vượt quá khả năng gửi mẫu của kho/R&D khi làm quy trình QC.'],
+  [/(muc tieu|dinh huong|tuong lai|5 nam|nam nam|3 nam|ke hoach|career|goal|leader|truong nhom|quan ly|account)/, 'Mục tiêu gần của mình là lên Booking Leader / Influencer Marketing Lead: không chỉ tự book creator mà xây SOP, dẫn dắt nhóm và tối ưu hiệu suất chiến dịch.\n\nXa hơn, mình muốn đi theo hướng Account (Account Executive → Account Manager) — nơi kết hợp được giao tiếp với đối tác, quản lý dự án và tư duy thương mại.'],
+  [/(quy trinh|cach book|booking the nao|book koc|book kol|tim creator|tim koc|tim kol|chon creator|danh gia kenh)/, 'Quy trình booking mình hay làm:\n\n1. Tìm creator hợp ngách và đánh giá kênh (tệp người xem, tương tác, chất lượng video, lịch sử bán hàng).\n2. Liên hệ, đàm phán cast / hoa hồng / voucher / quyền dùng nội dung.\n3. Gửi mẫu, lên brief có hook, góc khai thác và USP.\n4. Duyệt video, theo dõi lịch đăng, xin mã Spark Ads.\n5. Đo hiệu quả (GMV, NMV, ROI) và chọn creator để hợp tác dài hạn.'],
+  [/(dam phan|thuong luong|negotiat|cast|hoa hong|commission|voucher)/, 'Khi đàm phán với creator, mình làm việc trên cả 4 điểm: cast (phí cứng), tỉ lệ hoa hồng, voucher riêng cho tệp follower và quyền sử dụng nội dung (để chạy Spark Ads). Mình luôn tìm phương án hai bên cùng có lợi để giữ creator cho các đợt sau.'],
+  [/(brief|hook|angle|usp|kich ban|noi dung video|content)/, 'Brief của mình luôn có hook mở đầu, 2–3 góc khai thác (angle) và USP của sản phẩm, kèm video tham khảo. Mình hay chỉnh brief nhiều vòng để creator đọc là hiểu, quay là đúng ý thương hiệu.'],
+  [/(gmv|nmv|roi|kpi|so lieu|du lieu|data|bao cao|report|hieu qua|ads|spark|gmv max)/, 'Mình theo dõi KPI chiến dịch trên Google Sheets: GMV, NMV, ROI, số video đăng đúng hạn và hiệu suất từng creator. Mình có xin mã Spark Ads và làm quen với GMV Max để đẩy những video tốt.\n\nMình đang học thêm phần phân tích sâu — đọc số để tìm nguyên nhân và đề xuất quyết định, không chỉ ghi nhận.'],
+  [/(cong cu|phan mem|tool|tiktok one|tiktok shop|seller|affiliate|canva|illustrator|thiet ke|design|excel|sheet)/, 'Công cụ mình dùng thường xuyên: TikTok Shop Seller Center, TikTok One, Shopee Affiliate, Google Sheets / Docs / Drive, Canva và Adobe Illustrator (thiết kế 2D cơ bản — mình từng làm banner cho sản phẩm nón WAVU).'],
+  [/(tieng anh|english|ngoai ngu|ielts|toeic)/, 'Mình dùng tiếng Anh trong công việc: nhắn tin, email và thương lượng giá với khách quốc tế khi làm Sales xuất khẩu. Mình vẫn đang luyện thêm ngữ pháp và phản xạ nói để trình bày chuyên nghiệp hơn.'],
+  [/(thoi trang nu|thoi trang nam|huishe|eko|mcn|agency|toc gia|wig|non|polo|dong phuc)/, 'Ngoài các công ty trong CV, mình còn có kinh nghiệm: tìm nguồn KOC cho thương hiệu thời trang nữ HUISHE, tuyển KOC và giới thiệu chính sách cho MCN EKO-TECH, bán sản phẩm tóc xuất khẩu (wig, tape-in, clip-in…) và sales nón, áo polo, đồng phục.'],
+  [/(ap luc|stress|deadline|gap|nhieu viec|xu ly tinh huong|kho khan|that bai)/, 'Khi áp lực, mình chia việc ra theo mức ưu tiên và làm cái ảnh hưởng lớn nhất trước. Lúc kết quả chưa như mong muốn, mình nhìn lại số liệu để biết sai ở đâu rồi chỉnh luôn quy trình, thay vì chỉ cố gắng hơn theo cách cũ.'],
+  [/(lam viec nhom|teamwork|dong nghiep|phoi hop)/, 'Mình làm việc nhóm tốt vì quen phối hợp nhiều bên: kho, R&D, design, creator, agency. Mình hay chủ động chỉ ra điểm chưa khớp trong quy trình và đề xuất cách sửa.'],
+  [/(dung ai|hoc ai|ve ai|biet ai|chatgpt|claude|tri tue nhan tao|tu dong hoa|automation)/, 'Mình chủ động học AI để làm việc nhanh hơn: viết brief, dựng dashboard theo dõi KPI và tự động hoá việc lặp lại. Chính trang bạn đang xem cũng là một phần trong quá trình đó.'],
+  [/(tai sao|vi sao|why).*(tuyen|chon|hire)|(tuyen ban|hire you|chon ban)/, 'Vì mình mang lại cả ba thứ: quan hệ tốt với creator, khả năng triển khai chiến dịch từ brief đến báo cáo, và tư duy cải tiến quy trình. Mình không làm việc theo kiểu "xong là được" — mình muốn biết vì sao làm và làm sao để hiệu quả hơn ở lần sau.']
+];
+const strip = t => t.toLowerCase().normalize('NFD').replace(/[\u0300-\u036f]/g, '').replace(/đ/g, 'd');
+
+/* Đoán chủ đề từ câu gõ tự do */
+function topicOf(text) {
+  const t = strip(text);
+  if (/tinh cach|con nguoi|nguoi nhu the nao|personality/.test(t)) return 'vibe';
+  const hit = KB.findIndex(([re]) => re.test(t));
+  if (hit >= 0) return 'kb' + hit;
+  if (/kinh nghiem|lam viec o|cong ty|hussio|kori|layla|vinaland|experience|work/.test(t)) return 'exp';
+  if (/ky nang|skill|koc|kol/.test(t)) return 'skills';
+  if (/hoc|truong|gpa|thanh tich|education|award|bang cap/.test(t)) return 'edu';
+  if (/lien he|contact|email|mail|sdt|so dien|goi|phone|zalo/.test(t)) return 'contact';
+  if (/ban la ai|gioi thieu|ve ban|who|about|la ai/.test(t)) return 'me';
+  return 'fallback';
+}
+
+/* ---------- Giao diện chat ---------- */
+const thread = document.getElementById('thread');
+const chatTop = document.getElementById('chatTop');
+let busy = false;
+
+document.querySelectorAll('[data-chips]').forEach(box => {
+  const mini = box.classList.contains('mini');
+  box.innerHTML = TOPICS.map(t => `<button type="button" class="${mini ? '' : 'chip'}" data-topic="${t.id}">${ICONS[t.id]}${t.label}</button>`).join('');
+  box.addEventListener('click', e => {
+    const b = e.target.closest('[data-topic]'); if (!b) return;
+    const t = TOPICS.find(x => x.id === b.dataset.topic);
+    ask(t.q, t.id);
+  });
+});
+document.querySelectorAll('[data-ask]').forEach(f => f.addEventListener('submit', e => {
+  e.preventDefault();
+  const input = f.querySelector('input'); const v = input.value.trim();
+  if (!v) return; input.value = '';
+  ask(v, topicOf(v));
+}));
+
+const sleep = ms => new Promise(r => setTimeout(r, ms));
+const scrollEnd = () => window.scrollTo({ top: document.body.scrollHeight, behavior: 'smooth' });
+
+async function ask(question, topic) {
+  if (busy) return; busy = true;
+  document.body.classList.add('chatting');
+  const q = document.createElement('div'); q.className = 'q'; q.textContent = question; thread.appendChild(q);
+  const a = document.createElement('div'); a.className = 'a'; a.innerHTML = '<span class="typing"><i></i><i></i><i></i></span>';
+  thread.appendChild(a); scrollEnd();
+  chatTop.classList.add('talking');
+  await sleep(700);
+  const ans = topic.startsWith('kb') ? { card: () => '', text: KB[+topic.slice(2)][1] } : ANSWERS[topic];
+  a.innerHTML = ans.card();
+  const p = document.createElement('p'); a.appendChild(p); scrollEnd();
+  await sleep(ans.card() ? 450 : 0);
+  // gõ dần từng chữ như AI đang trả lời
+  const words = ans.text.split(/(\s+)/);
+  for (let i = 0; i < words.length; i++) { p.textContent += words[i]; if (i % 6 === 0) scrollEnd(); await sleep(18); }
+  chatTop.classList.remove('talking');
+  scrollEnd(); busy = false;
+}
+
+/* ---------- Nền mực loang pastel theo chuột (như mẫu: xanh lá, xanh dương) ----------
+   Ưu tiên mô phỏng chất lỏng WebGL (fluid.js); máy không hỗ trợ thì dùng đốm mờ 2D. */
+(function () {
+  const cv = document.getElementById('ink');
+  const reduce = matchMedia('(prefers-reduced-motion: reduce)').matches;
+  if (reduce) return;
+  try { if (initFluid(cv, { RAINBOW: true, SATURATION: 0.6, DYE_STRENGTH: 0.19 })) return; } catch (e) { console.warn('fluid', e); }
+  cv.classList.add('soft');
+  const ctx = cv.getContext('2d');
+  let W, H, blobs = [], last = null;
+  const COLORS = [[74, 222, 128], [96, 165, 250], [56, 189, 248], [134, 239, 172]];
+  function size() { W = cv.width = Math.ceil(innerWidth / 2); H = cv.height = Math.ceil(innerHeight / 2); }
+  size(); addEventListener('resize', size);
+  addEventListener('pointermove', e => {
+    const x = e.clientX / 2, y = e.clientY / 2;
+    if (last) {
+      const vx = x - last.x, vy = y - last.y, sp = Math.hypot(vx, vy);
+      if (sp > 1.5) {
+        const c = COLORS[Math.floor(Math.random() * COLORS.length)];
+        blobs.push({ x, y, vx: vx * .35, vy: vy * .35, r: 10 + Math.min(sp, 30) * .9, life: 1, c });
+        if (blobs.length > 140) blobs.shift();
+      }
+    }
+    last = { x, y };
+  }, { passive: true });
+  function frame() {
+    ctx.clearRect(0, 0, W, H);
+    for (const b of blobs) {
+      b.x += b.vx; b.y += b.vy; b.vx *= .94; b.vy *= .94; b.r += .45; b.life -= .007;
+      if (b.life <= 0) continue;
+      const g = ctx.createRadialGradient(b.x, b.y, 0, b.x, b.y, b.r);
+      g.addColorStop(0, `rgba(${b.c[0]},${b.c[1]},${b.c[2]},${(.5 * b.life).toFixed(3)})`);
+      g.addColorStop(1, `rgba(${b.c[0]},${b.c[1]},${b.c[2]},0)`);
+      ctx.fillStyle = g; ctx.beginPath(); ctx.arc(b.x, b.y, b.r, 0, Math.PI * 2); ctx.fill();
+    }
+    blobs = blobs.filter(b => b.life > 0);
+    requestAnimationFrame(frame);
+  }
+  if (!reduce) requestAnimationFrame(frame);
+})();
+</script>
+</body>
+</html>
